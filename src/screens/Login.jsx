@@ -2,6 +2,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Pressable,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -29,6 +30,7 @@ const Login = () => {
           y: 1,
         }}
         style={styles.gradientCurcle}>
+          <StatusBar backgroundColor={'transparent'} barStyle={'dark-content'} translucent />
         <Image
           style={styles.logoImage}
           source={require('./../assets/images/1.png')}
@@ -124,7 +126,7 @@ const styles = StyleSheet.create({
   },
   footerContainer: {
     position: 'absolute',
-    bottom: hp(-10),
+    bottom: hp(-12),
     width: wp(100),
     left: wp(-2),
     padding: wp(10),

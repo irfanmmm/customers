@@ -1,22 +1,39 @@
-import {Image, StyleSheet, Text, View} from 'react-native';
+import {Image, Pressable, StyleSheet, Text, View} from 'react-native';
 import React from 'react';
-import {wp} from '../styles/responsive';
+import {hp, wp} from '../styles/responsive';
 import {colors} from '../styles/style';
+import Icone from 'react-native-vector-icons/AntDesign';
+import {useNavigation} from '@react-navigation/native';
 
-const Header = () => {
+const Header = ({backButton = false, title = ''}) => {
+  const navigation = useNavigation();
   return (
     <View style={styles.container}>
-      <View style={styles.profile}>
-        <Image
-          resizeMode="contain"
-          style={styles.profileImage}
-          source={require('./../assets/images/1.png')}
-        />
-      </View>
-      <View style={styles.userDetailsContainer}>
-        <Text style={styles.username}>John Doe</Text>
-        <Text style={styles.userRole}>Admin</Text>
-      </View>
+      {!backButton ? (
+        <>
+          <View style={styles.profile}>
+            <Image
+              resizeMode="contain"
+              style={styles.profileImage}
+              source={require('./../assets/images/1.png')}
+            />
+          </View>
+          <View style={styles.userDetailsContainer}>
+            <Text style={styles.username}>John Doe</Text>
+            <Text style={styles.userRole}>Admin</Text>
+          </View>
+        </>
+      ) : (
+        <View style={styles.backButtonContainer}>
+          <Pressable
+            onPress={() => {
+              navigation.goBack();
+            }}>
+            <Icone size={wp(6)} name="arrowleft" />
+          </Pressable>
+          <Text style={styles.title}>{title}</Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -29,12 +46,24 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: wp(5),
     paddingVertical: wp(1.5),
+    paddingTop:hp(5),
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: wp(3),
     // shadowColor:colors.secondary,
     elevation: 10,
+  },
+  backButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: wp(4),
+    gap: wp(5),
+  },
+  title: {
+    fontSize: wp(4),
+    fontFamily: 'Montserrat-Medium',
   },
   profile: {
     padding: wp(0.7),

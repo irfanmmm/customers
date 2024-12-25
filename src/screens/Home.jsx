@@ -30,7 +30,7 @@ const Home = () => {
     <View style={styles.container}>
       <Header />
       <View style={styles.contentContainer}>
-        <ScrollView style={styles.statusMainContainer}>
+        <ScrollView style={styles.statusMainContainer} showsVerticalScrollIndicator={false}>
           <View style={styles.contentHeader}>
             {locations.map((loc, i) => (
               <View style={styles.routeContainer}>
@@ -84,15 +84,17 @@ export default Home;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    
   },
   contentContainer: {
     flex: 1,
     backgroundColor: colors.primary,
-    paddingHorizontal: wp(5),
+    
   },
   statusMainContainer: {
     height: hp(80),
     width: '100%',
+    paddingHorizontal: wp(5),
     // position: 'relative',
   },
   contentHeader: {
@@ -126,9 +128,9 @@ const styles = StyleSheet.create({
   statusLine: {
     position: 'absolute',
     zIndex: -10,
-    width: wp(1),
-    backgroundColor: 'red',
-    left: wp(2),
+    width: wp(0.6),
+    backgroundColor: colors.textOrange,
+    left: wp(1.8),
   },
   statusContentContainer: {
     width: '100%',
@@ -157,9 +159,9 @@ const styles = StyleSheet.create({
     ],
   },
   statusContainer: {
-    width: wp(5),
-    height: wp(5),
-    backgroundColor: 'red',
+    width: wp(4),
+    height: wp(4),
+    backgroundColor: colors.textOrange,
     borderRadius: wp(2.5),
     marginBottom: wp(5),
   },
