@@ -43,7 +43,7 @@ export default Header;
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    backgroundColor: 'white',
+    backgroundColor: colors.secondary,
     padding: wp(5),
     paddingVertical: wp(1.5),
     paddingTop:hp(5),
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: wp(0.7),
-    borderColor: colors.secondary,
+    borderColor: colors.tertiary,
   },
   profileImage: {
     width: '100%',

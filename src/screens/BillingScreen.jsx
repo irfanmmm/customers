@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
-import {useRoute} from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import {hp, wp} from '../styles/responsive';
 import {colors} from '../styles/style';
 import {MultiSelect, Dropdown} from 'react-native-element-dropdown';
@@ -18,6 +18,9 @@ import Header from '../components/Header';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Entypo from 'react-native-vector-icons/Entypo';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import LinearGradient from 'react-native-linear-gradient';
+import CheckBox from 'react-native-check-box';
+import {DropDownRenderItem} from '../components/DropDown/DropDownRenderItem';
 
 const products = [
   {label: 'Item 1', value: '1'},
@@ -30,8 +33,9 @@ const products = [
   {label: 'Item 8', value: '8'},
 ];
 const BillingScreen = () => {
-  const scrollViewRef = useRef(null);
+  const navigation = useNavigation();
   const {params} = useRoute();
+  const scrollViewRef = useRef(null);
   const [value, setValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
   const [selectedValues, setSelectedValues] = useState([]);
@@ -46,236 +50,316 @@ const BillingScreen = () => {
     setAddBrand(prev => prev + 1);
   };
 
+  const handleNavigateToReportScreen = () => {
+    navigation.navigate('ReportScreen');
+  };
+
   return (
-    <ScrollView style={styles.container} ref={scrollViewRef} showsVerticalScrollIndicator={false}>
-      <Header backButton title="Bill Payment" />
-      <View style={styles.formContainer}>
-        <View style={styles.locationShopDropDownContainer}>
-          <Text style={styles.label}>Location</Text>
-          <Dropdown
-            style={[styles.dropdown, isFocus && {borderColor: 'blue'}]}
-            placeholderStyle={styles.placeholderStyle}
-            selectedTextStyle={styles.selectedTextStyle}
-            inputSearchStyle={styles.inputSearchStyle}
-            iconStyle={styles.iconStyle}
-            fontFamily="Montserrat-Medium"
-            placeholder="Select Rote"
-            // activeColor={colors.}
-            data={products}
-            labelField="label"
-            valueField="value"
-            searchPlaceholder="Search..."
-            value={value}
-            onChange={item => {
-              setValue(item.value);
-              setIsFocus(false);
-            }}
-            renderLeftIcon={() => (
-              <Ionicons
-                style={styles.icon}
-                color={isFocus ? 'blue' : 'black'}
-                name="location-outline"
-                size={20}
-              />
-            )}
-          />
-        </View>
-        <View style={styles.locationShopDropDownContainer}>
-          <Text style={[styles.label]}>Shop</Text>
-          <Dropdown
-            style={[styles.dropdown, isFocus && {borderColor: 'blue'}]}
-            placeholderStyle={styles.placeholderStyle}
-            selectedTextStyle={styles.selectedTextStyle}
-            inputSearchStyle={styles.inputSearchStyle}
-            iconStyle={styles.iconStyle}
-            fontFamily="Montserrat-Medium"
-            placeholder="Select Shop"
-            // activeColor={colors.}
-            data={products}
-            labelField="label"
-            valueField="value"
-            search
-            searchPlaceholder="Search..."
-            value={value}
-            onChange={item => {
-              setValue(item.value);
-              setIsFocus(false);
-            }}
-            renderLeftIcon={() => (
-              <Entypo
-                style={styles.icon}
-                color={isFocus ? 'blue' : 'black'}
-                name="shop"
-                size={20}
-              />
-            )}
-          />
-        </View>
+    <LinearGradient style={{flex: 1}} colors={colors.gradient}>
+      <ScrollView
+        style={styles.container}
+        ref={scrollViewRef}
+        showsVerticalScrollIndicator={false}>
+        <Header backButton title="Bill Payment" />
+        <View style={styles.formContainer}>
+          <View style={styles.locationShopDropDownContainer}>
+            <Text style={styles.label}>Location</Text>
+            <Dropdown
+              style={[styles.dropdown, isFocus && {borderColor: 'blue'}]}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              containerStyle={{
+                borderRadius: wp(2),
+                backgroundColor: colors.secondary,
+              }}
+              itemContainerStyle={{
+                borderBottomColor: colors.primary,
+                borderBottomWidth: wp(0.2),
+                paddingHorizontal: wp(2),
+              }}
+              iconStyle={[styles.iconStyle, {tintColor: colors.primary}]}
+              fontFamily="Montserrat-Medium"
+              placeholder="Select Rote"
+              // activeColor={colors.}
+              data={products}
+              labelField="label"
+              valueField="value"
+              searchPlaceholder="Search..."
+              value={value}
+              onChange={item => {
+                setValue(item.value);
+                setIsFocus(false);
+              }}
+              renderLeftIcon={() => (
+                <Ionicons
+                  style={styles.icon}
+                  color={colors.primary}
+                  name="location-outline"
+                  size={20}
+                />
+              )}
+            />
+          </View>
+          <View style={styles.locationShopDropDownContainer}>
+            <Text style={[styles.label]}>Shop</Text>
+            <Dropdown
+              style={[styles.dropdown, isFocus && {borderColor: 'blue'}]}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              containerStyle={{
+                borderRadius: wp(2),
+                backgroundColor: colors.secondary,
+              }}
+              inputSearchStyle={[
+                styles.inputSearchStyle,
+                {
+                  borderRadius: wp(2),
+                  borderColor: colors.primary,
+                },
+              ]}
+              itemContainerStyle={{
+                borderBottomColor: colors.primary,
+                borderBottomWidth: wp(0.2),
+                paddingHorizontal: wp(2),
+              }}
+              iconStyle={[styles.iconStyle, {tintColor: colors.primary}]}
+              fontFamily="Montserrat-Medium"
+              placeholder="Select Shop"
+              // activeColor={colors.}
+              data={products}
+              labelField="label"
+              valueField="value"
+              search
+              searchPlaceholder="Search..."
+              value={value}
+              onChange={item => {
+                setValue(item.value);
+                setIsFocus(false);
+              }}
+              renderLeftIcon={() => (
+                <Entypo
+                  style={styles.icon}
+                  color={colors.primary}
+                  name="shop"
+                  size={20}
+                />
+              )}
+            />
+          </View>
 
-        <View style={styles.billingFormSection}>
-          {Array.from({length: addBrand}).map((_, i) => (
-            <View
-              style={[
-                styles.billingFormContainer,
-                {height: addBrand - 1 !== i && hp(5)},
-              ]}>
-              <View style={styles.billFormHeadder}>
-                <Text style={styles.billingFormTitle}>Ser No : {i + 1}</Text>
-                <MaterialIcons name="keyboard-arrow-down" size={wp(5)} />
-              </View>
+          <View style={styles.billingFormSection}>
+            {Array.from({length: addBrand}).map((_, i) => (
+              <View
+                style={[
+                  styles.billingFormContainer,
+                  {height: addBrand - 1 !== i && hp(5)},
+                ]}>
+                <View style={styles.billFormHeadder}>
+                  <Text style={styles.billingFormTitle}>Ser No : {i + 1}</Text>
+                  <MaterialIcons
+                    name="keyboard-arrow-down"
+                    size={wp(5)}
+                    color={colors.dark}
+                  />
+                </View>
 
-              {addBrand - 1 === i && (
-                <>
-                  <View style={styles.billingDropDownContainer}>
-                    <Text style={[styles.billingLabel]}>Brand</Text>
-                    <Dropdown
-                      style={[
-                        styles.billingDropdown,
-                        isFocus && {borderColor: colors.secondary},
-                      ]}
-                      placeholderStyle={styles.placeholderStyle}
-                      selectedTextStyle={styles.selectedTextStyle}
-                      inputSearchStyle={styles.inputSearchStyle}
-                      iconStyle={styles.iconStyle}
-                      fontFamily="Montserrat-Medium"
-                      placeholder="Select Brand"
-                      // activeColor={colors.}
-                      data={products}
-                      labelField="label"
-                      valueField="value"
-                      search
-                      searchPlaceholder="Search..."
-                      value={value}
-                      onChange={item => {
-                        setValue(item.value);
-                        setIsFocus(false);
-                      }}
-                      renderLeftIcon={() => (
-                        <Image
-                          style={styles.prefixIcon}
-                          source={require('./../assets/images/brand.png')}
-                        />
-                      )}
-                    />
-                  </View>
-                  <View style={styles.billingDropDownContainer}>
-                    <Text style={[styles.billingLabel]}>Product</Text>
-                    <MultiSelect
-                      style={[
-                        styles.billingDropdown,
-                        isFocus && {borderColor: colors.secondary},
-                      ]}
-                      placeholderStyle={styles.placeholderStyle}
-                      selectedTextStyle={styles.selectedTextStyle}
-                      inputSearchStyle={styles.inputSearchStyle}
-                      iconStyle={styles.iconStyle}
-                      fontFamily="Montserrat-Medium"
-                      placeholder="Select Product"
-                      // activeColor={colors.}
-                      data={products}
-                      labelField="label"
-                      valueField="value"
-                      search
-                      searchPlaceholder="Search..."
-                      // value={value}
-                      multiple={true}
-                      closeOnSelect={false}
-                      open={isFocus}
-                      setOpen={setIsFocus}
-                      value={selectedValues}
-                      onChange={selectProducts}
-                      items={products}
-                      renderLeftIcon={() => (
-                        <Image
-                          style={styles.prefixIcon}
-                          source={require('./../assets/images/package.png')}
-                        />
-                      )}
-                      renderSelectedItem={(item, unSelect) => (
-                        <View style={styles.selectedItemContainer}>
-                          <View style={styles.selectdItemFormContainer}>
-                            <Text
-                              style={styles.itemLable}
-                              numberOfLines={1}
-                              ellipsizeMode="tail">
-                              {item.label}
-                            </Text>
-                            <View
-                              style={{
-                                width: '50%',
-                                flexDirection: 'row',
-                                gap: wp(2),
-                              }}>
-                              <View>
-                                <Text style={styles.selectItemLabel}>
-                                  Quantity
-                                </Text>
+                {addBrand - 1 === i && (
+                  <>
+                    <View style={styles.billingDropDownContainer}>
+                      <Text style={[styles.billingLabel]}>Brand</Text>
+                      <Dropdown
+                        style={[
+                          styles.billingDropdown,
+                          isFocus && {borderColor: colors.secondary},
+                        ]}
+                        placeholderStyle={[
+                          styles.placeholderStyle,
+                          {color: colors.dark},
+                        ]}
+                        selectedTextStyle={[
+                          styles.selectedTextStyle,
+                          {color: colors.dark},
+                        ]}
+                        containerStyle={{
+                          borderRadius: wp(2),
+                          backgroundColor: colors.secondary,
+                        }}
+                        inputSearchStyle={[
+                          styles.inputSearchStyle,
+                          {
+                            borderRadius: wp(2),
+                            borderColor: colors.primary,
+                          },
+                        ]}
+                        itemContainerStyle={{
+                          borderBottomColor: colors.primary,
+                          borderBottomWidth: wp(0.2),
+                          paddingHorizontal: wp(2),
+                        }}
+                        iconStyle={[styles.iconStyle, {tintColor: colors.dark}]}
+                        fontFamily="Montserrat-Medium"
+                        placeholder="Select Brand"
+                        data={products}
+                        labelField="label"
+                        valueField="value"
+                        search
+                        searchPlaceholder="Search..."
+                        value={value}
+                        onChange={item => {
+                          setValue(item.value);
+                          setIsFocus(false);
+                        }}
+                        renderLeftIcon={() => (
+                          <Image
+                            style={styles.prefixIcon}
+                            source={require('./../assets/images/brand.png')}
+                          />
+                        )}
+                      />
+                    </View>
+                    <View style={styles.billingDropDownContainer}>
+                      <Text style={[styles.billingLabel]}>Products</Text>
+                      <MultiSelect
+                        style={[
+                          styles.billingDropdown,
+                          isFocus && {
+                            borderColor: colors.secondary,
+                          },
+                        ]}
+                        placeholderStyle={[
+                          styles.placeholderStyle,
+                          {color: colors.dark},
+                        ]}
+                        selectedTextStyle={[
+                          styles.selectedTextStyle,
+                          {color: colors.dark},
+                        ]}
+                        containerStyle={{
+                          borderRadius: wp(2),
+                          backgroundColor: colors.secondary,
+                        }}
+                        searchPlaceholderTextColor={colors.dark}
+                        inputSearchStyle={[
+                          styles.inputSearchStyle,
+                          {
+                            borderRadius: wp(2),
+                            borderColor: colors.primary,
+                          },
+                        ]}
+                        iconStyle={[styles.iconStyle, {tintColor: colors.dark}]}
+                        fontFamily="Montserrat-Medium"
+                        placeholder="Select Products"
+                        // activeColor={colors.}
+                        data={products}
+                        labelField="label"
+                        valueField="value"
+                        search
+                        searchPlaceholder="Search..."
+                        // value={value}
+                        multiple={true}
+                        closeOnSelect={false}
+                        open={isFocus}
+                        setOpen={setIsFocus}
+                        value={selectedValues}
+                        onChange={selectProducts}
+                        items={products}
+                        renderLeftIcon={() => (
+                          <Image
+                            style={styles.prefixIcon}
+                            source={require('./../assets/images/package.png')}
+                          />
+                        )}
+                        renderSelectedItem={(item, unSelect) => (
+                          <View style={styles.selectedItemContainer}>
+                            <View style={styles.selectdItemFormContainer}>
+                              <Text
+                                style={styles.itemLable}
+                                numberOfLines={1}
+                                ellipsizeMode="tail">
+                                {item.label}
+                              </Text>
+                              <View
+                                style={{
+                                  width: '50%',
+                                  flexDirection: 'row',
+                                  gap: wp(2),
+                                }}>
+                                <View>
+                                  <Text style={styles.selectItemLabel}>
+                                    Quantity
+                                  </Text>
 
-                                <TextInput
-                                  style={styles.selectItemInput}
-                                  placeholder="Quty"
-                                  value={'100'}
-                                  keyboardType="number-pad"
-                                />
-                              </View>
-                              <View>
-                                <Text style={styles.selectItemLabel}>
-                                  Price
-                                </Text>
-                                <Image style={{
-                                  width:wp(5),
-                                  height:wp(5),
-                                  position:'absolute',
-                                  left:0,
-                                  top:wp(2)
-                                }} source={require('./../assets/images/rupee.png')}  />
-                                <TextInput
-                                  style={[styles.selectItemInput,{paddingLeft:wp(4)}]}
-                                  placeholder="Price"
-                                  textAlign="left"
-                                  value={'1000000'}
-                                  keyboardType="number-pad"
-                                  placeholderTextColor="gray"
-                                  
-                                />
+                                  <TextInput
+                                    style={styles.selectItemInput}
+                                    placeholder="Quty"
+                                    value={'100'}
+                                    keyboardType="number-pad"
+                                  />
+                                </View>
+                                <View>
+                                  <Text style={styles.selectItemLabel}>
+                                    Price
+                                  </Text>
+                                  <Image
+                                    style={{
+                                      width: wp(5),
+                                      height: wp(5),
+                                      position: 'absolute',
+                                      left: 0,
+                                      top: wp(2),
+                                    }}
+                                    source={require('./../assets/images/rupee.png')}
+                                  />
+                                  <TextInput
+                                    style={[
+                                      styles.selectItemInput,
+                                      {paddingLeft: wp(4)},
+                                    ]}
+                                    placeholder="Price"
+                                    textAlign="left"
+                                    value={'1000000'}
+                                    keyboardType="number-pad"
+                                    placeholderTextColor="gray"
+                                  />
+                                </View>
                               </View>
                             </View>
+                            <Pressable
+                              onPress={() => unSelect && unSelect(item)}>
+                              <AntDesign size={wp(4)} name="closecircleo" />
+                            </Pressable>
                           </View>
-                          <Pressable onPress={() => unSelect && unSelect(item)}>
-                            <AntDesign size={wp(4)} name="closecircleo" />
-                          </Pressable>
-                          {/* <TouchableOpacity
-                          onPress={() => unSelect && unSelect(item)}>
-                          <View style={styles.selectedStyle}>
-                            <Text style={styles.textSelectedStyle}>
-                              {item.label}
-                            </Text>
-                            <AntDesign color="black" name="delete" size={17} />
-                          </View>
-                        </TouchableOpacity> */}
-                        </View>
-                      )}
-                      // renderItem={item => (
-                      //   <View style={styles.itemContainer}>
-                      //     <Text style={styles.itemText}>{item.label}</Text>
-                      //     <Entypo name="check" size={wp(5)} />
-                      //   </View>
-                      // )}
-                    />
-                  </View>
-                </>
-              )}
-            </View>
-          ))}
-          <TouchableOpacity style={styles.addNewProduct} onPress={addNewForm}>
-            <Text style={styles.addNotherBrand}>Add Another Brand</Text>
-            <View style={styles.addIcon}>
-              <Ionicons name="add" size={wp(5)} color={colors.gradient[1]} />
-            </View>
-          </TouchableOpacity>
+                        )}
+                        renderItem={item => {
+                          return (
+                            <DropDownRenderItem
+                              data={item}
+                              checkBox
+                              onSelect={() => {}}
+                            />
+                          );
+                        }}
+                      />
+                    </View>
+                  </>
+                )}
+              </View>
+            ))}
+            <TouchableOpacity style={styles.addNewProduct} onPress={addNewForm}>
+              <Text style={styles.addNotherBrand}>Add Another Brand</Text>
+              <View style={styles.addIcon}>
+                <Ionicons name="add" size={wp(5)} color={colors.gradient[1]} />
+              </View>
+            </TouchableOpacity>
+            <Pressable
+              style={styles.submitButton}
+              onPress={handleNavigateToReportScreen}>
+              <Text style={styles.submitText}>Submit</Text>
+            </Pressable>
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </LinearGradient>
   );
 };
 
@@ -284,7 +368,8 @@ export default BillingScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.primary,
+    paddingBottom: hp(20),
+    // backgroundColor: colors.primary,
   },
   heading: {
     marginTop: wp(5),
@@ -299,7 +384,6 @@ const styles = StyleSheet.create({
   //  Dropdown
   dropdown: {
     marginTop: wp(2),
-
     height: 50,
     borderColor: colors.secondary,
     borderWidth: 0.5,
@@ -320,15 +404,19 @@ const styles = StyleSheet.create({
     left: wp(5),
     top: -wp(0.5),
     zIndex: 999,
-    paddingHorizontal: wp(0.5),
+    paddingHorizontal: wp(1),
     fontSize: wp(3),
-    backgroundColor:colors.primary
+    backgroundColor: '#4c8479',
+    // padding:2,
+    color: colors.primary,
   },
   placeholderStyle: {
     fontSize: 16,
+    color: colors.primary,
   },
   selectedTextStyle: {
     fontSize: 16,
+    color: colors.primary,
   },
   iconStyle: {
     width: 20,
@@ -356,7 +444,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderRadius: 14,
-    backgroundColor: 'white',
+    backgroundColor: colors.primary,
     shadowColor: '#000',
     marginTop: 8,
     marginRight: 12,
@@ -409,7 +497,7 @@ const styles = StyleSheet.create({
     marginTop: wp(2),
     height: 50,
     borderColor: colors.primary,
-    borderWidth: wp(0.3),
+    borderWidth: wp(0.2),
     borderRadius: 8,
     paddingHorizontal: wp(5),
     position: 'relative',
@@ -439,7 +527,7 @@ const styles = StyleSheet.create({
     borderWidth: wp(0.2),
     borderRadius: wp(1),
     padding: wp(2),
-    
+
     color: colors.dark,
   },
   addNewProduct: {
@@ -452,6 +540,7 @@ const styles = StyleSheet.create({
   addNotherBrand: {
     fontSize: wp(3),
     fontFamily: 'Montserrat-Medium',
+    color: colors.primary,
   },
   addIcon: {
     padding: wp(2),
@@ -461,5 +550,17 @@ const styles = StyleSheet.create({
     // height:wp(10),
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  submitButton: {
+    marginBottom: hp(10),
+    backgroundColor: colors.tertiary,
+    elevation: 5,
+    borderRadius: wp(2),
+    marginTop: wp(5),
+    paddingVertical: hp(2),
+  },
+  submitText: {
+    textAlign: 'center',
+    fontFamily: 'Montserrat-Bold',
   },
 });

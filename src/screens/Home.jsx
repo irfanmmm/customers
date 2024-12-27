@@ -7,12 +7,15 @@ import {
   Animated,
   useAnimatedValue,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import Header from '../components/Header';
 import {colors} from '../styles/style';
 import {hp, wp} from '../styles/responsive';
 import Entypo from 'react-native-vector-icons/Entypo';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
+import LinearGradient from 'react-native-linear-gradient';
+import LottieView from 'lottie-react-native';
 
 const status = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
@@ -27,19 +30,44 @@ const Home = () => {
     });
   };
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={colors.gradient} style={styles.container}>
       <Header />
       <View style={styles.contentContainer}>
-        <ScrollView style={styles.statusMainContainer} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={styles.statusMainContainer}
+          showsVerticalScrollIndicator={false}>
           <View style={styles.contentHeader}>
-            {locations.map((loc, i) => (
+            {/* {locations.map((loc, i) => (
               <View style={styles.routeContainer}>
                 <Text style={styles.routes}>{loc}</Text>
               </View>
-            ))}
+            ))} */}
+            <View style={styles.routeContainer}>
+              <Ionicons
+                style={styles.icon}
+                color={colors.primary}
+                name="location-outline"
+                size={wp(5)}
+              />
+              <Text
+                style={{
+                  marginRight: 'auto',
+                  marginLeft: wp(2),
+                  color: colors.primary,
+                  fontFamily: 'Montserrat-Bold',
+                  fontSize: wp(4),
+                }}>
+                {locations[0]}
+              </Text>
+            </View>
           </View>
           {status.map((_, i) => (
-            <View style={styles.statusParentContainer}>
+            <View key={i}
+              style={[
+                styles.statusParentContainer,
+                {marginBottom: status.length - 1 === i ? hp(10) : 0},
+              ]}
+              >
               <View
                 style={[
                   styles.statusLine,
@@ -50,7 +78,6 @@ const Home = () => {
                 ]}
               />
               <View
-                key={i}
                 style={[
                   styles.statusContentContainer,
                   {marginTop: i === 0 && wp(5)},
@@ -59,7 +86,14 @@ const Home = () => {
                 <Pressable
                   style={styles.statusDescription}
                   onPress={() => handleNavigate(`Shop Name ${i + 1}`)}>
-                  <Text style={{color: colors.white, fontSize: wp(3)}}>
+                  <Entypo style={styles.icon} name="shop" size={20} />
+                  <Text
+                    style={{
+                      color: colors.white,
+                      fontSize: wp(3),
+                      marginRight: 'auto',
+                      marginLeft: wp(2),
+                    }}>
                     Shop Name {i + 1}
                   </Text>
                   <View style={styles.rightArrow}>
@@ -74,8 +108,16 @@ const Home = () => {
             </View>
           ))}
         </ScrollView>
+        <Pressable>
+          <LottieView
+            style={styles.lottieView}
+            source={require('./../assets/lottiefiles/animatedNots.json')}
+            autoPlay
+            loop
+          />
+        </Pressable>
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 
@@ -84,12 +126,10 @@ export default Home;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    
   },
   contentContainer: {
     flex: 1,
-    backgroundColor: colors.primary,
-    
+    // backgroundColor: colors.primary,
   },
   statusMainContainer: {
     height: hp(80),
@@ -104,15 +144,16 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   routeContainer: {
-    // padding: wp(2),
-    // width:'100%',
+    padding: wp(2),
+    width: '100%',
     // paddingHorizontal:wp(2),
-    backgroundColor: colors.tertiary,
+    backgroundColor: colors.primaryGreen,
     borderColor: colors.secondary,
     borderWidth: wp(0.5),
     borderRadius: wp(2),
     marginTop: wp(5),
-    // flex:1
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   routes: {
     padding: wp(1.6),
@@ -143,13 +184,14 @@ const styles = StyleSheet.create({
   },
   statusDescription: {
     width: wp(79),
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.textOrange,
     padding: wp(2),
     borderRadius: wp(2),
     paddingLeft: wp(5),
     elevation: 2,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   rightArrow: {
     transform: [
@@ -164,5 +206,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.textOrange,
     borderRadius: wp(2.5),
     marginBottom: wp(5),
+  },
+  lottieView: {
+    position: 'absolute',
+    width: '100%',
+    height: wp(20),
+    right: -wp(35),
+    bottom: hp(10),
+    zIndex: 50,
   },
 });
