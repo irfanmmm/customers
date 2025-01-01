@@ -1,4 +1,5 @@
 import {
+  BackHandler,
   Image,
   KeyboardAvoidingView,
   Pressable,
@@ -8,56 +9,117 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import {colors} from '../styles/style';
 import {hp, wp} from '../styles/responsive';
-import {useNavigation} from '@react-navigation/native';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
+import {KeyboardAvoidingScrollView} from 'react-native-keyboard-avoiding-scroll-view';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Login = () => {
   const navigation = useNavigation();
-  const login = () => {
+  const isFocused = useIsFocused();
+  const [email, setEmail] = useState(null);
+  const [password, setPassword] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
+
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', () => {
+      BackHandler.exitApp();
+    });
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress');
+    };
+  }, [isFocused]);
+
+
+  const login = async () => {
+    if (!email && !password) {
+      setErrorMessage('Email and Passowd Is Requerd');
+      return;
+    }
+    if (!email) {
+      setErrorMessage('Email Is Requerd');
+      return;
+    } else if (!password) {
+      setErrorMessage('Password Is Requerd');
+      return;
+    }
+    setErrorMessage('');
+    await AsyncStorage.setItem(
+      'user-data',
+      JSON.stringify({
+        email,
+        password,
+      }),
+    );
     navigation.navigate('Home');
   };
   return (
     <LinearGradient colors={colors.gradient} style={styles.container}>
-      <LinearGradient
-        colors={colors.lightGradient}
-        end={{
-          x: 0,
-          y: 1,
-        }}
-        style={styles.gradientCurcle}>
-          <StatusBar backgroundColor={'transparent'} barStyle={'dark-content'} translucent />
-        <Image
-          style={styles.logoImage}
-          source={require('./../assets/images/1.png')}
-        />
-      </LinearGradient>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.inputContainer}>
-        <View style={styles.inputBoxContainer}>
-          <TextInput
-            placeholder="Username or Email"
-            inputMode="email"
-            style={styles.inputBox}
-          />
-          <View style={styles.inputIcon}>
-            <Ionicons
-              name="person-outline"
-              color={colors.secondary}
-              size={wp(5.5)}
+      <KeyboardAvoidingScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.inputContainer}>
+          <LinearGradient
+            colors={colors.lightGradient}
+            end={{
+              x: 0,
+              y: 1,
+            }}
+            style={styles.gradientCurcle}>
+            <StatusBar
+              backgroundColor={'transparent'}
+              barStyle={'dark-content'}
+              translucent
             />
+            <Image
+              style={styles.logoImage}
+              source={require('./../assets/images/1.png')}
+            />
+          </LinearGradient>
+          <View style={styles.inputBoxContainer}>
+            <TextInput
+              placeholder="Username or Email"
+              style={styles.inputBox}
+              onChangeText={email => {
+                setErrorMessage('');
+                setEmail(email);
+              }}
+            />
+            <View style={styles.inputIcon}>
+              <Ionicons
+                name="person-outline"
+                color={colors.secondary}
+                size={wp(5.5)}
+              />
+            </View>
           </View>
-        </View>
-        <View style={styles.inputBoxContainer}>
-          <TextInput placeholder="Password" style={styles.inputBox} />
-          <View style={[styles.inputIcon, {marginLeft: -wp(1)}]}>
-            <EvilIcons name="lock" color={colors.secondary} size={wp(8)} />
+          <View style={styles.inputBoxContainer}>
+            <TextInput
+              placeholder="Password"
+              style={styles.inputBox}
+              onChangeText={email => {
+                setErrorMessage('');
+                setPassword(email);
+              }}
+            />
+            <View style={[styles.inputIcon, {marginLeft: -wp(1)}]}>
+              <EvilIcons name="lock" color={colors.secondary} size={wp(8)} />
+            </View>
           </View>
+          {errorMessage && (
+            <Text
+              style={{
+                color: 'red',
+                fontSize: wp(3),
+                fontFamily: 'Montserrat-Medium',
+              }}>
+              {errorMessage}
+            </Text>
+          )}
         </View>
         <View style={styles.footerContainer}>
           <LinearGradient
@@ -72,7 +134,7 @@ const Login = () => {
             </Pressable>
           </LinearGradient>
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardAvoidingScrollView>
     </LinearGradient>
   );
 };
@@ -82,9 +144,8 @@ export default Login;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-    paddingHorizontal: wp(2),
+    // justifyContent: 'center',
+    // alignItems: 'center',
   },
   gradientCurcle: {
     width: wp(70),
@@ -92,6 +153,8 @@ const styles = StyleSheet.create({
     borderRadius: wp(40),
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: hp(5),
+    marginTop: hp(20),
   },
   logoImage: {
     width: wp(80),
@@ -100,9 +163,12 @@ const styles = StyleSheet.create({
     marginBottom: wp(8),
   },
   inputContainer: {
-    flex: 0.5,
+    flex: 1,
     width: '100%',
     paddingHorizontal: wp(10),
+    justifyContent: 'center',
+    alignItems: 'center',
+    // marginTop: hp(10),
   },
   inputBoxContainer: {
     width: '100%',
@@ -112,7 +178,7 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     borderWidth: 1,
     marginBottom: wp(5),
-    position: 'relative',
+    // position: 'relative',
   },
   inputBox: {
     paddingLeft: wp(15),
@@ -126,9 +192,9 @@ const styles = StyleSheet.create({
   },
   footerContainer: {
     position: 'absolute',
-    bottom: hp(-12),
+    bottom: -hp(25),
     width: wp(100),
-    left: wp(-2),
+    left: wp(0),
     padding: wp(10),
     paddingHorizontal: wp(13),
     backgroundColor: colors.primary,

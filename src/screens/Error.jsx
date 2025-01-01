@@ -1,14 +1,20 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import {StyleSheet, Text, View} from 'react-native';
+import React from 'react';
+import LinearGradient from 'react-native-linear-gradient';
+import {colors} from '../styles/style';
 
 const Error = () => {
   return (
-    <View>
+    <LinearGradient colors={colors.gradient} style={styles.container}>
       <Text>Error</Text>
-    </View>
-  )
-}
+    </LinearGradient>
+  );
+};
 
-export default Error
+export default Error;
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

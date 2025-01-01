@@ -6,14 +6,15 @@ import {
   View,
   Animated,
   useAnimatedValue,
+  BackHandler,
 } from 'react-native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import Header from '../components/Header';
 import {colors} from '../styles/style';
 import {hp, wp} from '../styles/responsive';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {useNavigation} from '@react-navigation/native';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import LottieView from 'lottie-react-native';
 
@@ -24,11 +25,24 @@ const status = [
 const locations = ['Calicut University', 'Malappuram', 'San Francisco'];
 const Home = () => {
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+      BackHandler.addEventListener('hardwareBackPress', () => {
+        BackHandler.exitApp();
+      });
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress');
+      };
+    }, [isFocused]);
+
   const handleNavigate = shop => {
     navigation.navigate('BillPayment', {
       shop,
     });
   };
+
+
   return (
     <LinearGradient colors={colors.gradient} style={styles.container}>
       <Header />
@@ -37,11 +51,6 @@ const Home = () => {
           style={styles.statusMainContainer}
           showsVerticalScrollIndicator={false}>
           <View style={styles.contentHeader}>
-            {/* {locations.map((loc, i) => (
-              <View style={styles.routeContainer}>
-                <Text style={styles.routes}>{loc}</Text>
-              </View>
-            ))} */}
             <View style={styles.routeContainer}>
               <Ionicons
                 style={styles.icon}
@@ -62,12 +71,12 @@ const Home = () => {
             </View>
           </View>
           {status.map((_, i) => (
-            <View key={i}
+            <View
+              key={i}
               style={[
                 styles.statusParentContainer,
                 {marginBottom: status.length - 1 === i ? hp(10) : 0},
-              ]}
-              >
+              ]}>
               <View
                 style={[
                   styles.statusLine,
@@ -108,14 +117,14 @@ const Home = () => {
             </View>
           ))}
         </ScrollView>
-        <Pressable>
+        {/* <Pressable>
           <LottieView
             style={styles.lottieView}
             source={require('./../assets/lottiefiles/animatedNots.json')}
             autoPlay
             loop
           />
-        </Pressable>
+        </Pressable> */}
       </View>
     </LinearGradient>
   );

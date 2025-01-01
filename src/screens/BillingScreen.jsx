@@ -220,6 +220,8 @@ const BillingScreen = () => {
                     <View style={styles.billingDropDownContainer}>
                       <Text style={[styles.billingLabel]}>Products</Text>
                       <MultiSelect
+                      // dropdownPosition='auto'
+                      dropdownPosition='top'
                         style={[
                           styles.billingDropdown,
                           isFocus && {
