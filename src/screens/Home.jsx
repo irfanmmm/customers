@@ -4,120 +4,325 @@ import {
   StyleSheet,
   Text,
   View,
-  Animated,
-  useAnimatedValue,
   BackHandler,
+  RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
-import React, { useEffect } from 'react';
+import React, {useEffect, useState} from 'react';
 import Header from '../components/Header';
 import {colors} from '../styles/style';
 import {hp, wp} from '../styles/responsive';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {useIsFocused, useNavigation} from '@react-navigation/native';
+import {
+  useIsFocused,
+  useNavigation,
+  useNavigationState,
+} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
-import LottieView from 'lottie-react-native';
+import {useAxios} from '../hooks/useAxios';
+import {GET_PROFILE, GET_ROUTE} from '../config/urls';
+import {
+  ALERT_TYPE,
+  AlertNotificationRoot,
+  Dialog,
+} from 'react-native-alert-notification';
+import {
+  ALERT_TYPES,
+  AlertService,
+} from '../components/CustomeAlert/CustomeAlert';
 
-const status = [
-  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-  11, 12, 13, 14,
-];
-const locations = ['Calicut University', 'Malappuram', 'San Francisco'];
 const Home = () => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
+  const navigationState = useNavigationState(state => state);
 
-  useEffect(() => {
-      BackHandler.addEventListener('hardwareBackPress', () => {
-        BackHandler.exitApp();
-      });
-      return () => {
-        BackHandler.removeEventListener('hardwareBackPress');
-      };
-    }, [isFocused]);
+  const [profileDetails, setProfileDetails] = useState(null);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [rootsAndShops, setRootsAndShops] = useState(null);
+  const [iseVisibleShops, setIsVisibleShops] = useState({
+    isVisible: false,
+    index: 0,
+  });
+  const [refresh, setRefresh] = useState(false);
+  const {fetchData, loading} = useAxios();
 
-  const handleNavigate = shop => {
-    navigation.navigate('BillPayment', {
-      shop,
+  const fetchLocationsAndShops = async () => {
+    return await fetchData({
+      url: GET_ROUTE,
     });
   };
 
+  const fetchProfileDetails = async () => {
+    return await fetchData({
+      url: GET_PROFILE,
+    });
+  };
+
+  const handleBackPress = () => {
+    const currentRoute = navigationState?.routes[navigationState.index];
+
+    if (currentRoute?.name === 'Home') {
+      BackHandler.exitApp();
+      return true;
+    } else if (currentRoute?.name === 'ReportScreen') {
+      if (isCompleted) {
+        navigation.goBack();
+      } else {
+        navigation.navigate('BillPayment');
+      }
+      return true;
+    } else if (currentRoute?.name === 'BillPayment') {
+      AlertService.show({
+        type: ALERT_TYPES.WARNING,
+        title: 'Warning',
+        message: 'Are you sure to exit ?',
+        onConfirm: () => {
+          navigation.goBack();
+          setClareData(true);
+        },
+        onCancel: () => {
+          console.log('cancel clicked');
+        },
+      });
+      return true;
+    }
+    return false;
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
+    };
+  }, [navigationState]);
+
+  useEffect(() => {
+    /* fetch locations and shops */
+    fetchLocationsAndShops()
+      .then(response => {
+        if (response?.statusCode === 6000) {
+          console.log(response?.assignedroute);
+
+          setRootsAndShops(response?.assignedroute);
+          if (
+            response?.assignedroute.length === 2 ||
+            response?.assignedroute.length === 1
+          ) {
+            setIsVisibleShops({
+              isVisible: true,
+              index: 0,
+            });
+          }
+        } else {
+          AlertService.show({
+            type: ALERT_TYPE.WARNING,
+            title: 'Warning',
+            message: response.message,
+            onConfirm: () => {
+              BackHandler.exitApp();
+            },
+            onCancel: () => {
+              console.log('cancel clicked');
+            },
+          });
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      });
+
+    /* fetch profile details */
+    fetchProfileDetails()
+      .then(response => {
+        if (response.statusCode === 6000) {
+          setProfileDetails(response?.employeeinfo);
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }, [isFocused, refresh]);
+
+  const handleNavigate = (route, shop, status = false) => {
+    if (!status) {
+      setIsCompleted(false);
+      navigation.navigate('BillPayment', {
+        shop,
+        route,
+        status,
+      });
+    } else {
+      setIsCompleted(true);
+      navigation.navigate('ReportScreen', {
+        shop,
+        route,
+        status,
+      });
+    }
+  };
+
+  if (loading)
+    return (
+      <LinearGradient
+        colors={colors.lightGradient}
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          zIndex: 500,
+          height: '100%',
+          width: '100%',
+          backgroundColor: 'rgba(255, 255, 255,0.8)',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <ActivityIndicator size={'large'} color={colors.dark} />
+      </LinearGradient>
+    );
 
   return (
-    <LinearGradient colors={colors.gradient} style={styles.container}>
-      <Header />
-      <View style={styles.contentContainer}>
-        <ScrollView
-          style={styles.statusMainContainer}
-          showsVerticalScrollIndicator={false}>
-          <View style={styles.contentHeader}>
-            <View style={styles.routeContainer}>
-              <Ionicons
-                style={styles.icon}
-                color={colors.primary}
-                name="location-outline"
-                size={wp(5)}
+    <AlertNotificationRoot>
+      <LinearGradient colors={colors.gradient} style={styles.container}>
+        <Header
+          username={profileDetails?.name}
+          userRole={profileDetails?.roleType}
+        />
+        <View style={styles.contentContainer}>
+          <ScrollView
+            style={styles.statusMainContainer}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refresh}
+                onRefresh={() => {
+                  setRefresh(true);
+                  setTimeout(() => {
+                    setRefresh(false);
+                  }, 1000);
+                }}
               />
-              <Text
-                style={{
-                  marginRight: 'auto',
-                  marginLeft: wp(2),
-                  color: colors.primary,
-                  fontFamily: 'Montserrat-Bold',
-                  fontSize: wp(4),
-                }}>
-                {locations[0]}
-              </Text>
-            </View>
-          </View>
-          {status.map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.statusParentContainer,
-                {marginBottom: status.length - 1 === i ? hp(10) : 0},
-              ]}>
-              <View
-                style={[
-                  styles.statusLine,
-                  {
-                    height: status.length - 1 === i ? 0 : '100%',
-                    top: i === 0 ? wp(5) : 0,
-                  },
-                ]}
-              />
-              <View
-                style={[
-                  styles.statusContentContainer,
-                  {marginTop: i === 0 && wp(5)},
-                ]}>
-                <View style={styles.statusContainer}></View>
+            }>
+            {rootsAndShops?.map((route, index) => (
+              <>
                 <Pressable
-                  style={styles.statusDescription}
-                  onPress={() => handleNavigate(`Shop Name ${i + 1}`)}>
-                  <Entypo style={styles.icon} name="shop" size={20} />
-                  <Text
-                    style={{
-                      color: colors.white,
-                      fontSize: wp(3),
-                      marginRight: 'auto',
-                      marginLeft: wp(2),
-                    }}>
-                    Shop Name {i + 1}
-                  </Text>
-                  <View style={styles.rightArrow}>
-                    <Entypo
-                      name="chevron-small-down"
-                      size={wp(6)}
-                      color={colors.dark}
+                  style={[
+                    styles.contentHeader,
+                    {
+                      marginBottom:
+                        rootsAndShops?.length - 1 === index ? hp(15) : 0,
+                    },
+                  ]}
+                  key={index}
+                  onPress={() => {
+                    setIsVisibleShops({
+                      index,
+                      isVisible: true,
+                    });
+                  }}>
+                  <View
+                    style={[
+                      styles.routeContainer,
+                      {
+                        borderColor:
+                          iseVisibleShops.index === index
+                            ? colors.textOrange
+                            : colors.secondary,
+                        backgroundColor:
+                          iseVisibleShops.index === index
+                            ? colors.gradient[1]
+                            : colors.primaryGreen,
+                      },
+                    ]}>
+                    <Ionicons
+                      style={styles.icon}
+                      color={colors.primary}
+                      name="location-outline"
+                      size={wp(5)}
                     />
+                    <Text
+                      style={{
+                        marginRight: 'auto',
+                        marginLeft: wp(2),
+                        color: colors.primary,
+                        fontFamily: 'Montserrat-Bold',
+                        fontSize: wp(4),
+                      }}>
+                      {route?.route}
+                    </Text>
                   </View>
                 </Pressable>
-              </View>
-            </View>
-          ))}
-        </ScrollView>
-        {/* <Pressable>
+                {iseVisibleShops.isVisible &&
+                  iseVisibleShops.index === index &&
+                  route?.shops?.map((shop, i) => (
+                    <View
+                      key={i}
+                      style={[
+                        styles.statusParentContainer,
+                        {
+                          marginTop:
+                            i === 0 && rootsAndShops?.length - 1 === index
+                              ? -hp(15)
+                              : 0,
+                          marginBottom:
+                            route?.shops?.length - 1 === i &&
+                            rootsAndShops?.length - 1 === index
+                              ? hp(10)
+                              : 0,
+                        },
+                      ]}>
+                      <View
+                        style={[
+                          styles.statusLine,
+                          {
+                            height: route?.shops?.length - 1 === i ? 0 : '100%',
+                            top: i === 0 ? wp(5) : 0,
+                          },
+                        ]}
+                      />
+                      <View
+                        style={[
+                          styles.statusContentContainer,
+                          {marginTop: i === 0 && wp(5)},
+                        ]}>
+                        <View style={styles.statusContainer}></View>
+                        <Pressable
+                          style={[styles.statusDescription]}
+                          onPress={() =>
+                            handleNavigate(route, shop, shop.shopStatus)
+                          }>
+                          <Entypo style={styles.icon} name="shop" size={20} />
+                          <Text
+                            style={{
+                              color: colors.white,
+                              fontSize: wp(3),
+                              marginRight: 'auto',
+                              marginLeft: wp(2),
+                            }}>
+                            {shop?.shopname}
+                          </Text>
+                          {shop.shopStatus && (
+                            <Ionicons
+                              name="checkmark-circle-sharp"
+                              size={wp(6)}
+                              color={colors.primaryGreen}
+                            />
+                          )}
+                          <View style={styles.rightArrow}>
+                            <Entypo
+                              name="chevron-small-down"
+                              size={wp(6)}
+                              color={colors.dark}
+                            />
+                          </View>
+                        </Pressable>
+                      </View>
+                    </View>
+                  ))}
+              </>
+            ))}
+          </ScrollView>
+          {/* <Pressable>
           <LottieView
             style={styles.lottieView}
             source={require('./../assets/lottiefiles/animatedNots.json')}
@@ -125,8 +330,9 @@ const Home = () => {
             loop
           />
         </Pressable> */}
-      </View>
-    </LinearGradient>
+        </View>
+      </LinearGradient>
+    </AlertNotificationRoot>
   );
 };
 
@@ -193,7 +399,7 @@ const styles = StyleSheet.create({
   },
   statusDescription: {
     width: wp(79),
-    backgroundColor: colors.textOrange,
+    backgroundColor: colors.secondary,
     padding: wp(2),
     borderRadius: wp(2),
     paddingLeft: wp(5),

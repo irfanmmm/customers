@@ -4,8 +4,8 @@ import {wp} from '../../styles/responsive';
 import {colors} from '../../styles/style';
 import CheckBox from 'react-native-check-box';
 
-export const DropDownRenderItem = ({data, onSelect, checkBox = false}) => {
-  const isChecked = false;
+export const DropDownRenderItem = ({data, onSelect, checkBox = false, isChecked}) => {
+  
   return (
     <Pressable
       style={{

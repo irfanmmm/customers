@@ -1,0 +1,23 @@
+{
+    "discount": "10",
+    "products": [
+        {
+            "product": "Doveshampoo",
+            "brand": "Dovesh",
+            "qty": "10",
+            "mrp": "35"
+        },
+        {
+            "product": "Doveshampoo",
+            "brand": "Dovesh",
+            "qty": "10",
+            "mrp": "35"
+        },
+        {
+            "product": "Doveshampoo",
+            "brand": "Dovesh",
+            "qty": "10",
+            "mrp": "35"
+        }
+    ]
+}

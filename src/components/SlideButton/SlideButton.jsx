@@ -1,18 +1,18 @@
 import {Animated, StyleSheet, Text, View} from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {colors} from '../../styles/style';
 import {hp, wp} from '../../styles/responsive';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import LottieView from 'lottie-react-native';
+import {useIsFocused} from '@react-navigation/native';
 
 const defaultWidth = wp(15);
 const maxWidth = wp(90);
-const autoCompleteThreshold = maxWidth * 0.6;
+const autoCompleteThreshold = maxWidth * 0.9;
 
-const SlideButton = () => {
+const SlideButton = ({onCompleted}) => {
+  const isFocused = useIsFocused();
   const slideAnim = useRef(new Animated.Value(defaultWidth)).current;
-  const lottie = useRef(null);
-  const [isCompleated, setIsCompleated] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   const slideOpacity = slideAnim.interpolate({
     inputRange: [defaultWidth, maxWidth],
@@ -20,8 +20,13 @@ const SlideButton = () => {
     extrapolate: 'clamp',
   });
 
+  useEffect(() => {
+    setIsCompleted(false);
+    slideAnim.setValue(defaultWidth);
+  }, [isFocused]);
+
   const slideToRight = event => {
-    if (isCompleated) return;
+    if (isCompleted) return;
     const newWidth = Math.max(
       defaultWidth,
       Math.min(maxWidth, event.nativeEvent.locationX),
@@ -33,16 +38,13 @@ const SlideButton = () => {
         toValue: maxWidth,
         duration: 200,
         useNativeDriver: false,
-      }).start(() => {
-        setIsCompleated(true);
-        lottie?.current?.play();
-      });
+      }).start();
     } else {
       Animated.timing(slideAnim, {
         toValue: defaultWidth,
         duration: 200,
         useNativeDriver: false,
-      }).start(() => setIsCompleated(false));
+      }).start();
     }
   };
 
@@ -59,10 +61,11 @@ const SlideButton = () => {
         onStartShouldSetResponder={() => true}
         onResponderMove={slideToRight}
         onResponderRelease={() => {
-          if (isCompleated) return;
+          if (isCompleted) return;
           if (slideAnim._value >= maxWidth - 10) {
-            lottie?.current?.play();
             console.log('Slide confirmed');
+            // setIsCompleted(true);
+            onCompleted(true);
           } else {
             Animated.timing(slideAnim, {
               toValue: defaultWidth,
@@ -80,17 +83,7 @@ const SlideButton = () => {
           size={wp(6)}
         />
       </Animated.View>
-      {isCompleated && (
-        <View style={styles.lottieContainer}>
-          <LottieView
-            source={require('./../../assets/lottiefiles/confirmAnimation.json')}
-            autoPlay={false}
-            loop={false}
-            ref={lottie}
-            style={styles.lottie}
-          />
-        </View>
-      )}
+
       <Text style={styles.text}>Slide To Confirm</Text>
     </View>
   );
@@ -104,6 +97,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.textOrange,
     borderRadius: wp(2),
     elevation: 10,
+    marginBottom: hp(13),
   },
 
   text: {
@@ -123,14 +117,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.tertiary,
     opacity: 0.3,
     borderRadius: wp(2),
-  },
-  lottieContainer: {
-    position: 'absolute',
-    zIndex: 500,
-    width: wp(25),
-    height: wp(25),
-    top: -hp(3),
-    left: wp(34),
   },
 
   lottie: {

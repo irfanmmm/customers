@@ -1,4 +1,4 @@
-package com.ympstaff
+package com.ordersnap
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -15,7 +15,7 @@ class MainActivity : ReactActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(null)
   }
-  override fun getMainComponentName(): String = "YMPStaff"
+  override fun getMainComponentName(): String = "Order Snap"
 
   /**
    * Returns the instance of the [ReactActivityDelegate]. We use [DefaultReactActivityDelegate]

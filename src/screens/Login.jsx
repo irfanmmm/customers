@@ -1,7 +1,8 @@
 import {
+  ActivityIndicator,
   BackHandler,
   Image,
-  KeyboardAvoidingView,
+  Keyboard,
   Pressable,
   StatusBar,
   StyleSheet,
@@ -9,81 +10,142 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import {colors} from '../styles/style';
 import {hp, wp} from '../styles/responsive';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
-import {KeyboardAvoidingScrollView} from 'react-native-keyboard-avoiding-scroll-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useAxios} from '../hooks/useAxios';
+import {LOGIN_URL} from '../config/urls';
 
 const Login = () => {
   const navigation = useNavigation();
+  const passwordRef = useRef(null);
+  const usernameRef = useRef(null);
   const isFocused = useIsFocused();
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [keyBoardHight, setKeyBoardHight] = useState({
+    isVisible: false,
+    height: 0,
+  });
 
+  const {loading, fetchData} = useAxios();
 
   useEffect(() => {
+    if (!isFocused) return;
     BackHandler.addEventListener('hardwareBackPress', () => {
       BackHandler.exitApp();
+    });
+
+    Keyboard.addListener('keyboardDidShow', e => {
+      console.log(e.endCoordinates.height);
+      setKeyBoardHight({
+        isVisible: true,
+        height: e.endCoordinates.height,
+      });
+    });
+    Keyboard.addListener('keyboardDidHide', e => {
+      setKeyBoardHight({
+        isVisible: false,
+        height: e.endCoordinates.height,
+      });
     });
     return () => {
       BackHandler.removeEventListener('hardwareBackPress');
     };
   }, [isFocused]);
 
-
   const login = async () => {
     if (!email && !password) {
-      setErrorMessage('Email and Passowd Is Requerd');
+      setErrorMessage('Email and Password Is Required');
       return;
     }
     if (!email) {
-      setErrorMessage('Email Is Requerd');
+      setErrorMessage('Email Is Required');
       return;
     } else if (!password) {
-      setErrorMessage('Password Is Requerd');
+      setErrorMessage('Password Is Required');
       return;
     }
     setErrorMessage('');
-    await AsyncStorage.setItem(
-      'user-data',
-      JSON.stringify({
-        email,
-        password,
-      }),
-    );
-    navigation.navigate('Home');
+    try {
+      const response = await fetchData({
+        url: LOGIN_URL,
+        method: 'POST',
+        data: {
+          UserName: email,
+          Password: password,
+          Mobile: true,
+        },
+      });
+
+      if (response.statusCode === 6000) {
+        await AsyncStorage.setItem('user-data', response?.token);
+        navigation.navigate('Home');
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (error) {
+      setErrorMessage(error?.message);
+    }
   };
+
+  const handleSubmitEditing = filed => {
+    if (filed === 'username') {
+      passwordRef?.current?.focus();
+    } else {
+      login();
+      Keyboard.dismiss();
+    }
+  };
+
   return (
     <LinearGradient colors={colors.gradient} style={styles.container}>
-      <KeyboardAvoidingScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.inputContainer}>
+      <View style={styles.inputContainer}>
+        <StatusBar
+          backgroundColor={'transparent'}
+          barStyle={'dark-content'}
+          translucent
+        />
+        <View>
           <LinearGradient
             colors={colors.lightGradient}
             end={{
               x: 0,
               y: 1,
             }}
-            style={styles.gradientCurcle}>
-            <StatusBar
-              backgroundColor={'transparent'}
-              barStyle={'dark-content'}
-              translucent
-            />
+            style={[
+              styles.gradientCurcle,
+              keyBoardHight.isVisible && {
+                marginTop: hp(5),
+              },
+            ]}>
             <Image
-              style={styles.logoImage}
+              style={[styles.logoImage]}
               source={require('./../assets/images/1.png')}
             />
           </LinearGradient>
+        </View>
+        <View
+          style={[
+            {
+              paddingHorizontal: wp(10),
+              width: '100%',
+            },
+          ]}>
           <View style={styles.inputBoxContainer}>
             <TextInput
               placeholder="Username or Email"
               style={styles.inputBox}
+              enterKeyHint="next"
+              ref={usernameRef}
+              placeholderTextColor={colors.primary}
+              onSubmitEditing={() => handleSubmitEditing('username')}
               onChangeText={email => {
                 setErrorMessage('');
                 setEmail(email);
@@ -100,7 +162,11 @@ const Login = () => {
           <View style={styles.inputBoxContainer}>
             <TextInput
               placeholder="Password"
+              secureTextEntry
               style={styles.inputBox}
+              placeholderTextColor={colors.primary}
+              ref={passwordRef}
+              onSubmitEditing={() => handleSubmitEditing('password')}
               onChangeText={email => {
                 setErrorMessage('');
                 setPassword(email);
@@ -121,6 +187,7 @@ const Login = () => {
             </Text>
           )}
         </View>
+
         <View style={styles.footerContainer}>
           <LinearGradient
             colors={colors.gradient}
@@ -130,11 +197,15 @@ const Login = () => {
             }}
             style={styles.gradientBtn}>
             <Pressable onPress={login}>
-              <Text style={styles.loginText}>Login</Text>
+              {loading ? (
+                <ActivityIndicator size={'small'} />
+              ) : (
+                <Text style={styles.loginText}>Login</Text>
+              )}
             </Pressable>
           </LinearGradient>
         </View>
-      </KeyboardAvoidingScrollView>
+      </View>
     </LinearGradient>
   );
 };
@@ -144,6 +215,7 @@ export default Login;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    // justifyContent:'space-between'
     // justifyContent: 'center',
     // alignItems: 'center',
   },
@@ -153,8 +225,7 @@ const styles = StyleSheet.create({
     borderRadius: wp(40),
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: hp(5),
-    marginTop: hp(20),
+    marginTop: hp(15),
   },
   logoImage: {
     width: wp(80),
@@ -165,10 +236,8 @@ const styles = StyleSheet.create({
   inputContainer: {
     flex: 1,
     width: '100%',
-    paddingHorizontal: wp(10),
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    // marginTop: hp(10),
   },
   inputBoxContainer: {
     width: '100%',
@@ -181,6 +250,8 @@ const styles = StyleSheet.create({
     // position: 'relative',
   },
   inputBox: {
+    width: '100%',
+    color: colors.primary,
     paddingLeft: wp(15),
     fontSize: wp(4),
     fontFamily: 'Montserrat-Regular',
@@ -191,16 +262,13 @@ const styles = StyleSheet.create({
     left: wp(5),
   },
   footerContainer: {
-    position: 'absolute',
-    bottom: -hp(25),
-    width: wp(100),
-    left: wp(0),
+    width: '100%',
     padding: wp(10),
     paddingHorizontal: wp(13),
     backgroundColor: colors.primary,
     height: hp(20),
-    borderTopEndRadius: wp(10),
-    borderTopStartRadius: wp(10),
+    borderTopRightRadius: wp(10),
+    borderTopLeftRadius: wp(10),
   },
   gradientBtn: {
     borderRadius: wp(8),

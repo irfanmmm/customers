@@ -1,16 +1,28 @@
-import {Image, Pressable, StyleSheet, Text, View} from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
-import {hp, wp} from '../styles/responsive';
-import {colors} from '../styles/style';
+import { hp, wp } from '../styles/responsive';
+import { colors } from '../styles/style';
 import Icone from 'react-native-vector-icons/AntDesign';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
-const Header = ({backButton = false, title = ''}) => {
+
+type Props = {
+  backButton?: boolean;
+  title?: string;
+  profile?: string;
+  username?: string;
+  userRole?: string;
+  screenname?: string;
+  onPress?: () => void;
+}
+
+const Header = ({ backButton = false, title = '', profile, userRole, username, onPress }: Props) => {
   const navigation = useNavigation();
   return (
     <View style={styles.container}>
       {!backButton ? (
         <>
+
           <View style={styles.profile}>
             <Image
               resizeMode="contain"
@@ -19,16 +31,14 @@ const Header = ({backButton = false, title = ''}) => {
             />
           </View>
           <View style={styles.userDetailsContainer}>
-            <Text style={styles.username}>John Doe</Text>
-            <Text style={styles.userRole}>Admin</Text>
+            <Text style={styles.username}>{username}</Text>
+            <Text style={styles.userRole}>{userRole}</Text>
           </View>
         </>
       ) : (
         <View style={styles.backButtonContainer}>
           <Pressable
-            onPress={() => {
-              navigation.goBack();
-            }}>
+            onPress={onPress}>
             <Icone size={wp(6)} name="arrowleft" />
           </Pressable>
           <Text style={styles.title}>{title}</Text>
@@ -46,7 +56,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary,
     padding: wp(5),
     paddingVertical: wp(1.5),
-    paddingTop:hp(5),
+    paddingTop: hp(5),
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

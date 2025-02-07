@@ -6,7 +6,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import {colors} from '../styles/style';
 import Header from '../components/Header';
@@ -14,49 +14,74 @@ import {wp} from '../styles/responsive';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNRestart from 'react-native-restart';
+import {useAxios} from '../hooks/useAxios';
+import {GET_PROFILE} from '../config/urls';
+import {AlertNotificationRoot} from 'react-native-alert-notification';
 
-const Profile = () => {
+const Profile = ({navigation}) => {
+  const {data, fetchData, loading} = useAxios();
+  const [profile, setProfile] = useState(null);
+
+  const fetProfile = async () => {
+    try {
+      const response = await fetchData({
+        url: GET_PROFILE,
+      });
+      if (response.statusCode === 6000) {
+        setProfile(response.employeeinfo);
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (error) {}
+  };
+
+  useEffect(() => {
+    fetProfile();
+  }, []);
+
   const logout = async () => {
     await AsyncStorage.clear();
     RNRestart.restart();
   };
   return (
-    <LinearGradient colors={colors.gradient} style={styles.container}>
-      <Header backButton title="Profile" />
-      <View style={styles.contentContainer}>
-        <View style={styles.profileContainer}>
-          <Image
-            style={styles.profile}
-            resizeMode="contain"
-            source={require('./../assets/images/1.png')}
-          />
+    <AlertNotificationRoot>
+      <LinearGradient colors={colors.gradient} style={styles.container}>
+        <Header backButton title="Profile" onPress={()=>navigation.goBack()} />
+        <View style={styles.contentContainer}>
+          <View style={styles.profileContainer}>
+            <Image
+              style={styles.profile}
+              resizeMode="contain"
+              source={require('./../assets/images/1.png')}
+            />
+          </View>
+          <View style={styles.detailsContainer}>
+            <View style={styles.details}>
+              <Text style={styles.detailTitle}>Name</Text>
+              <Text style={styles.detailContent}>{profile?.name}</Text>
+            </View>
+            <View style={styles.details}>
+              <Text style={styles.detailTitle}>Phone No</Text>
+              <Text style={styles.detailContent}>
+                +91 {profile?.phoneNumber}
+              </Text>
+            </View>
+            <View style={styles.details}>
+              <Text style={styles.detailTitle}>Address</Text>
+              <Text style={styles.detailContent}>{profile?.address}</Text>
+            </View>
+            <View style={styles.details}>
+              <Text style={styles.detailTitle}>Employee Status</Text>
+              <Text style={styles.detailContent}>{profile?.roleType}</Text>
+            </View>
+          </View>
+          <Pressable style={styles.logoutButton} onPress={logout}>
+            <Text style={styles.logoutText}>Logout</Text>
+            <MaterialIcons name="logout" size={wp(7)} color={colors.dark} />
+          </Pressable>
         </View>
-        <View style={styles.detailsContainer}>
-          <View style={styles.details}>
-            <Text style={styles.detailTitle}>Name</Text>
-            <Text style={styles.detailContent}>Muhammed Irfan</Text>
-          </View>
-          <View style={styles.details}>
-            <Text style={styles.detailTitle}>Phone No</Text>
-            <Text style={styles.detailContent}>+91 9567848271</Text>
-          </View>
-          <View style={styles.details}>
-            <Text style={styles.detailTitle}>Address</Text>
-            <Text style={styles.detailContent}>
-              Thazekkatt (H), Malappuram, Kerela
-            </Text>
-          </View>
-          <View style={styles.details}>
-            <Text style={styles.detailTitle}>Employee Status</Text>
-            <Text style={styles.detailContent}>Staff</Text>
-          </View>
-        </View>
-        <Pressable style={styles.logoutButton} onPress={logout}>
-          <Text style={styles.logoutText}>Logout</Text>
-          <MaterialIcons name="logout" size={wp(7)} color={colors.dark} />
-        </Pressable>
-      </View>
-    </LinearGradient>
+      </LinearGradient>
+    </AlertNotificationRoot>
   );
 };
 

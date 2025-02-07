@@ -1,4 +1,4 @@
-package com.ympstaff
+package com.ordersnap
 
 import android.app.Application
 import com.facebook.react.PackageList
